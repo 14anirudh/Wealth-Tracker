@@ -1,0 +1,40 @@
+import { createRatio, deleteRatio, getRatios, updateRatioAlert } from '../services/ratioService.js';
+
+const getStatusCode = (error, fallback = 500) => error.statusCode || fallback;
+
+export const list = async (req, res) => {
+  try {
+    const result = await getRatios(req.userId);
+    return res.json(result);
+  } catch (error) {
+    return res.status(getStatusCode(error)).json({ message: error.message });
+  }
+};
+
+export const create = async (req, res) => {
+  try {
+    const result = await createRatio(req.userId, req.body || {});
+    return res.status(201).json(result);
+  } catch (error) {
+    return res.status(getStatusCode(error, 400)).json({ message: error.message });
+  }
+};
+
+export const remove = async (req, res) => {
+  try {
+    await deleteRatio(req.userId, req.params.id);
+    return res.json({ message: 'Deleted' });
+  } catch (error) {
+    return res.status(getStatusCode(error)).json({ message: error.message });
+  }
+};
+
+export const updateAlert = async (req, res) => {
+  try {
+    const result = await updateRatioAlert(req.userId, req.params.id, req.body || {});
+    return res.json(result);
+  } catch (error) {
+    return res.status(getStatusCode(error)).json({ message: error.message });
+  }
+};
+
