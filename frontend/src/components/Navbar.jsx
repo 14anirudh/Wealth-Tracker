@@ -143,6 +143,17 @@ const Navbar = ({ onLogout, user }) => {
               >
                 Chat
               </Link>
+               <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors duration-200"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <Sun className="h-5 w-5 text-yellow-400" />
+                ) : (
+                  <Moon className="h-5 w-5 text-dark" />
+                )}
+              </button>
               <div className="relative" ref={menuRef}>
                 <button
                   type="button"
@@ -178,17 +189,7 @@ const Navbar = ({ onLogout, user }) => {
                   </div>
                 )}
               </div>
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors duration-200"
-                aria-label="Toggle dark mode"
-              >
-                {isDarkMode ? (
-                  <Sun className="h-5 w-5 text-yellow-400" />
-                ) : (
-                  <Moon className="h-5 w-5 text-dark" />
-                )}
-              </button>
+             
             </div>
           </div>
         </div>

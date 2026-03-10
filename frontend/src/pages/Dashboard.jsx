@@ -1261,7 +1261,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1277,7 +1277,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1399,7 +1399,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1415,7 +1415,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1506,7 +1506,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Invested"
                       />
@@ -1526,7 +1526,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Current"
                       />
@@ -1571,7 +1571,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Invested"
                       />
@@ -1591,7 +1591,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Current"
                       />
@@ -1638,7 +1638,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Invested"
                       />
@@ -1658,7 +1658,7 @@ const Dashboard = () => {
                             true,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Current"
                       />
@@ -1755,7 +1755,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1771,7 +1771,7 @@ const Dashboard = () => {
                                   e.target.value,
                                 )
                               }
-                              onWheel={(e) => e.preventDefault()}
+                              onWheel={(e) => e.currentTarget.blur()}
                               className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                             />
                           </td>
@@ -1864,7 +1864,7 @@ const Dashboard = () => {
                             e.target.value,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Invested"
                       />
@@ -1884,7 +1884,7 @@ const Dashboard = () => {
                             e.target.value,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Current"
                       />
@@ -1929,7 +1929,7 @@ const Dashboard = () => {
                             e.target.value,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Invested"
                       />
@@ -1949,7 +1949,7 @@ const Dashboard = () => {
                             e.target.value,
                           )
                         }
-                        onWheel={(e) => e.preventDefault()}
+                        onWheel={(e) => e.currentTarget.blur()}
                         className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none focus:border-dark/50 font-mono tabular-nums"
                         placeholder="Current"
                       />
@@ -2056,7 +2056,7 @@ const Dashboard = () => {
                                     e.target.value,
                                   )
                                 }
-                                onWheel={(e) => e.preventDefault()}
+                                onWheel={(e) => e.currentTarget.blur()}
                                 className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1.5 font-mono"
                                 placeholder="Invested"
                               />
@@ -2076,7 +2076,7 @@ const Dashboard = () => {
                                     e.target.value,
                                   )
                                 }
-                                onWheel={(e) => e.preventDefault()}
+                                onWheel={(e) => e.currentTarget.blur()}
                                 className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1.5 font-mono"
                                 placeholder="Current"
                               />
@@ -2162,7 +2162,7 @@ const Dashboard = () => {
                                         e.target.value,
                                       )
                                     }
-                                    onWheel={(e) => e.preventDefault()}
+                                    onWheel={(e) => e.currentTarget.blur()}
                                     className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1.5 font-mono"
                                   />
                                 </td>
@@ -2179,7 +2179,7 @@ const Dashboard = () => {
                                         e.target.value,
                                       )
                                     }
-                                    onWheel={(e) => e.preventDefault()}
+                                    onWheel={(e) => e.currentTarget.blur()}
                                     className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1.5 font-mono"
                                   />
                                 </td>

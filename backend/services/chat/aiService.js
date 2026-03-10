@@ -1,4 +1,11 @@
-const GEMINI_MODEL ='gemini-2.5-pro';
+const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-pro';
+const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS) || 45000;
+
+const getMaxOutputTokens = (intent) => {
+  if (intent === 'FINANCIAL_REVIEW') return 12000;
+  if (intent === 'AFFORDABILITY_CHECK') return 9000;
+  return 70000;
+};
 
 const sanitizeValue = (value) => {
   if (value === null) return null;
@@ -86,13 +93,13 @@ const buildPrompt = ({ userQuestion, intent, analysis, chatHistory = [], financi
     `User Question: ${userQuestion}`,
     '',
     'Recent Chat History (last 5 messages):',
-    JSON.stringify(chatHistory, null, 2),
+    JSON.stringify(chatHistory),
     '',
     'Current Financial Snapshot:',
-    JSON.stringify(financialSnapshot, null, 2),
+    JSON.stringify(financialSnapshot),
     '',
     'Financial Analysis JSON (source of truth):',
-    JSON.stringify(analysis, null, 2),
+    JSON.stringify(analysis),
     '',
     formatInstructions,
   ].join('\n');
@@ -110,10 +117,12 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
 
   const prompt = buildPrompt({ userQuestion, intent, analysis, chatHistory, financialSnapshot, lastActiveContext });
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const maxOutputTokens = getMaxOutputTokens(intent);
+  let timeout;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    timeout = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -124,12 +133,11 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
         generationConfig: {
           temperature: 0.2,
           topP: 0.9,
-          maxOutputTokens: 35000,
+          maxOutputTokens,
         },
       }),
       signal: controller.signal,
     });
-    clearTimeout(timeout);
 
     if (!response.ok) {
       const errorBody = await response.text();
@@ -163,7 +171,12 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
     return {
       used: false,
       text: null,
-      error: error.name === 'AbortError' ? 'Gemini request timed out' : error.message,
+      error:
+        error.name === 'AbortError'
+          ? `Gemini request timed out after ${Math.round(GEMINI_TIMEOUT_MS / 1000)}s`
+          : error.message,
     };
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 };

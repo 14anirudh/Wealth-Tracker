@@ -217,6 +217,7 @@ const Ratios = () => {
   const [alertDrafts, setAlertDrafts] = useState({});
   const [alertSaving, setAlertSaving] = useState({});
   const [currentUserEmail, setCurrentUserEmail] = useState('');
+  const savedRatiosRef = useRef(null);
   const openAlertRatio = useMemo(
     () => ratios.find((ratio) => ratio._id === openAlertFor) || null,
     [ratios, openAlertFor],
@@ -464,6 +465,11 @@ const Ratios = () => {
     }
   };
 
+  const handleScrollToSavedRatios = () => {
+    if (!savedRatiosRef.current) return;
+    savedRatiosRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -486,7 +492,17 @@ const Ratios = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold text-dark mb-2">Ratios</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <h1 className="text-2xl font-bold text-dark">Ratios</h1>
+          <button
+            type="button"
+            onClick={handleScrollToSavedRatios}
+            disabled={ratios.length === 0}
+            className="bg-[#f2f2f2] text-[#161717] dark:bg-[#272727] dark:text-[#f1f1f1] px-4 py-2 text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            View Saved Ratios
+          </button>
+        </div>
         <p className="text-dark/80 text-sm mb-6">
           Compare two parts of your portfolio: select a category and subcategory for each part, or use &quot;Total Wealth&quot; to see one segment against the rest.
         </p>
@@ -609,7 +625,7 @@ const Ratios = () => {
         </div>
 
         {ratios.length > 0 && (
-          <div className="mt-10">
+          <div ref={savedRatiosRef} className="mt-10">
             <h2 className="text-lg font-semibold text-dark mb-3">Saved ratios</h2>
             <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {ratios.map((item) => {
@@ -727,17 +743,14 @@ const Ratios = () => {
                 onChange={(e) => handleAlertDraftChange(openAlertFor, 'email', e.target.value)}
                 className="w-full border border-[#d0d0d0] dark:border-[#353535] rounded-lg px-3 py-2 text-sm bg-bg text-dark"
               />
-              <select
+              <SelectorDropdown
                 value={alertDrafts[openAlertFor]?.targetPart || 'part1'}
-                onChange={(e) => handleAlertDraftChange(openAlertFor, 'targetPart', e.target.value)}
-                className="w-full border border-[#d0d0d0] dark:border-[#353535] rounded-lg px-3 py-2 text-sm bg-bg text-dark"
-              >
-                {alertTargetOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    Alert on {option.label}
-                  </option>
-                ))}
-              </select>
+                options={alertTargetOptions.map((option) => ({
+                  value: option.value,
+                  label: `Alert on ${option.label}`,
+                }))}
+                onSelect={(value) => handleAlertDraftChange(openAlertFor, 'targetPart', value)}
+              />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <select
                   value={alertDrafts[openAlertFor]?.condition || 'above'}

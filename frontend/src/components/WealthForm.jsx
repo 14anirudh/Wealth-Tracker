@@ -384,7 +384,7 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                           placeholder="Invested"
                           value={stock.invested === 0 ? '' : stock.invested}
                           onChange={(e) => updateStock(index, 'invested', e.target.value)}
-                          onWheel={(e) => e.preventDefault()}
+                          onWheel={(e) => e.currentTarget.blur()}
                           step="any"
                           className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums"
                         />
@@ -396,7 +396,7 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                           step="any"
                           value={stock.current === 0 ? '' : stock.current}
                           onChange={(e) => updateStock(index, 'current', e.target.value)}
-                          onWheel={(e) => e.preventDefault()}
+                          onWheel={(e) => e.currentTarget.blur()}
                           className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums"
                         />
                       </td>
@@ -452,7 +452,7 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                           placeholder="Invested"
                           value={mf.invested === 0 ? '' : mf.invested}
                           onChange={(e) => updateMutualFund(index, 'invested', e.target.value)}
-                          onWheel={(e) => e.preventDefault()}
+                          onWheel={(e) => e.currentTarget.blur()}
                           className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums"
                         />
                       </td>
@@ -462,7 +462,7 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                           placeholder="Current"
                           value={mf.current === 0 ? '' : mf.current}
                           onChange={(e) => updateMutualFund(index, 'current', e.target.value)}
-                          onWheel={(e) => e.preventDefault()}
+                          onWheel={(e) => e.currentTarget.blur()}
                           className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums"
                         />
                       </td>
@@ -502,10 +502,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
               <tr className="border-b border-[#c6c6c6] dark:border-[#303030] hover:bg-dark/[0.02]">
                 <td className="px-4 py-2 font-medium">Cash</td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.cash.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, cash: { ...formData.nonEquity.cash, invested: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
+                  <input type="number" value={formData.nonEquity.cash.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, cash: { ...formData.nonEquity.cash, invested: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.cash.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, cash: { ...formData.nonEquity.cash, current: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
+                  <input type="number" value={formData.nonEquity.cash.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, cash: { ...formData.nonEquity.cash, current: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
                 </td>
                 <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">
                   {formatReturns((formData.nonEquity.cash.current || 0) - (formData.nonEquity.cash.invested || 0), calculateGainPercentage(formData.nonEquity.cash.invested || 0, formData.nonEquity.cash.current || 0))}
@@ -519,10 +519,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
               <tr className="border-b border-[#c6c6c6] dark:border-[#303030] hover:bg-dark/[0.02]">
                 <td className="px-4 py-2 font-medium">Gold</td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.commodities.gold.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, gold: { ...formData.nonEquity.commodities.gold, invested: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
+                  <input type="number" value={formData.nonEquity.commodities.gold.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, gold: { ...formData.nonEquity.commodities.gold, invested: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.commodities.gold.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, gold: { ...formData.nonEquity.commodities.gold, current: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
+                  <input type="number" value={formData.nonEquity.commodities.gold.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, gold: { ...formData.nonEquity.commodities.gold, current: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
                 </td>
                 <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">
                   {formatReturns((formData.nonEquity.commodities.gold.current || 0) - (formData.nonEquity.commodities.gold.invested || 0), calculateGainPercentage(formData.nonEquity.commodities.gold.invested || 0, formData.nonEquity.commodities.gold.current || 0))}
@@ -536,10 +536,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
               <tr className="border-b border-[#c6c6c6] dark:border-[#303030] hover:bg-dark/[0.02]">
                 <td className="px-4 py-2 font-medium">Silver</td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.commodities.silver.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, silver: { ...formData.nonEquity.commodities.silver, invested: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
+                  <input type="number" value={formData.nonEquity.commodities.silver.invested || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, silver: { ...formData.nonEquity.commodities.silver, invested: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.nonEquity.commodities.silver.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, silver: { ...formData.nonEquity.commodities.silver, current: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
+                  <input type="number" value={formData.nonEquity.commodities.silver.current || ''} onChange={(e) => setFormData({ ...formData, nonEquity: { ...formData.nonEquity, commodities: { ...formData.nonEquity.commodities, silver: { ...formData.nonEquity.commodities.silver, current: parseFloat(e.target.value) || 0 } } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
                 </td>
                 <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">
                   {formatReturns((formData.nonEquity.commodities.silver.current || 0) - (formData.nonEquity.commodities.silver.invested || 0), calculateGainPercentage(formData.nonEquity.commodities.silver.invested || 0, formData.nonEquity.commodities.silver.current || 0))}
@@ -576,10 +576,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                         <input type="text" placeholder="Asset Name" value={asset.name || ''} onChange={(e) => updateFixedIncome(index, 'name', e.target.value)} className="w-full bg-transparent border-0 text-dark py-1.5 focus:outline-none focus:ring-0" />
                       </td>
                       <td className="px-4 py-2 w-[20%]">
-                        <input type="number" placeholder="Invested" value={asset.invested === 0 ? '' : asset.invested} onChange={(e) => updateFixedIncome(index, 'invested', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" />
+                        <input type="number" placeholder="Invested" value={asset.invested === 0 ? '' : asset.invested} onChange={(e) => updateFixedIncome(index, 'invested', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" />
                       </td>
                       <td className="px-4 py-2 w-[20%]">
-                        <input type="number" placeholder="Current" value={asset.current === 0 ? '' : asset.current} onChange={(e) => updateFixedIncome(index, 'current', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" />
+                        <input type="number" placeholder="Current" value={asset.current === 0 ? '' : asset.current} onChange={(e) => updateFixedIncome(index, 'current', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" />
                       </td>
                       <td className="px-4 py-2 w-[25%] text-dark text-sm whitespace-nowrap">{formatReturns(gain, gainPct)}</td>
                       <td className="px-2 py-2 w-[5%] text-center">
@@ -615,10 +615,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
               <tr className="border-b border-[#c6c6c6] dark:border-[#303030] hover:bg-dark/[0.02]">
                 <td className="px-4 py-2 font-medium">Invested (Emergency)</td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.emergency.invested.investedAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, invested: { ...formData.emergency.invested, investedAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
+                  <input type="number" value={formData.emergency.invested.investedAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, invested: { ...formData.emergency.invested, investedAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.emergency.invested.currentAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, invested: { ...formData.emergency.invested, currentAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
+                  <input type="number" value={formData.emergency.invested.currentAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, invested: { ...formData.emergency.invested, currentAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
                 </td>
                 <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">
                   {formatReturns((formData.emergency.invested.currentAmount || 0) - (formData.emergency.invested.investedAmount || 0), calculateGainPercentage(formData.emergency.invested.investedAmount || 0, formData.emergency.invested.currentAmount || 0))}
@@ -632,10 +632,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
               <tr className="hover:bg-dark/[0.02]">
                 <td className="px-4 py-2 font-medium">Bank Account</td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.emergency.bankAccount.investedAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, bankAccount: { ...formData.emergency.bankAccount, investedAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
+                  <input type="number" value={formData.emergency.bankAccount.investedAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, bankAccount: { ...formData.emergency.bankAccount, investedAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Invested" />
                 </td>
                 <td className="px-4 py-2">
-                  <input type="number" value={formData.emergency.bankAccount.currentAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, bankAccount: { ...formData.emergency.bankAccount, currentAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
+                  <input type="number" value={formData.emergency.bankAccount.currentAmount || ''} onChange={(e) => setFormData({ ...formData, emergency: { ...formData.emergency, bankAccount: { ...formData.emergency.bankAccount, currentAmount: parseFloat(e.target.value) || 0 } } })} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark text-left py-1.5 focus:outline-none  font-mono tabular-nums" placeholder="Current" />
                 </td>
                 <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">
                   {formatReturns((formData.emergency.bankAccount.currentAmount || 0) - (formData.emergency.bankAccount.investedAmount || 0), calculateGainPercentage(formData.emergency.bankAccount.investedAmount || 0, formData.emergency.bankAccount.currentAmount || 0))}
@@ -715,10 +715,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                         <tr className="border-b border-[#c6c6c6] dark:border-[#303030]">
                           <td className="px-4 py-2 font-medium">{sub.name || 'Amount'}</td>
                           <td className="px-4 py-2">
-                            <input type="number" value={sub.amount?.invested || ''} onChange={(e) => updateCustomSubcategoryAmount(catIndex, subIndex, 'invested', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" placeholder="Invested" />
+                            <input type="number" value={sub.amount?.invested || ''} onChange={(e) => updateCustomSubcategoryAmount(catIndex, subIndex, 'invested', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" placeholder="Invested" />
                           </td>
                           <td className="px-4 py-2">
-                            <input type="number" value={sub.amount?.current || ''} onChange={(e) => updateCustomSubcategoryAmount(catIndex, subIndex, 'current', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" placeholder="Current" />
+                            <input type="number" value={sub.amount?.current || ''} onChange={(e) => updateCustomSubcategoryAmount(catIndex, subIndex, 'current', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" placeholder="Current" />
                           </td>
                           <td className="px-2 py-2 text-dark text-sm whitespace-nowrap">
                             {formatReturns((sub.amount?.current || 0) - (sub.amount?.invested || 0), calculateGainPercentage(sub.amount?.invested || 0, sub.amount?.current || 0))}
@@ -749,10 +749,10 @@ const WealthForm = ({ onSubmit, initialData = null }) => {
                                 <input type="text" placeholder="Name" value={h.name || ''} onChange={(e) => updateCustomHolding(catIndex, subIndex, holdIndex, 'name', e.target.value)} className="w-full bg-transparent border-0 text-dark py-1.5 focus:outline-none" />
                               </td>
                               <td className="px-4 py-2">
-                                <input type="number" placeholder="Invested" value={h.invested === 0 ? '' : h.invested} onChange={(e) => updateCustomHolding(catIndex, subIndex, holdIndex, 'invested', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" />
+                                <input type="number" placeholder="Invested" value={h.invested === 0 ? '' : h.invested} onChange={(e) => updateCustomHolding(catIndex, subIndex, holdIndex, 'invested', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" />
                               </td>
                               <td className="px-4 py-2">
-                                <input type="number" placeholder="Current" value={h.current === 0 ? '' : h.current} onChange={(e) => updateCustomHolding(catIndex, subIndex, holdIndex, 'current', e.target.value)} onWheel={(e) => e.preventDefault()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" />
+                                <input type="number" placeholder="Current" value={h.current === 0 ? '' : h.current} onChange={(e) => updateCustomHolding(catIndex, subIndex, holdIndex, 'current', e.target.value)} onWheel={(e) => e.currentTarget.blur()} className="w-full bg-transparent border-0 border-b border-[#c6c6c6] dark:border-[#303030] text-dark py-1 font-mono" />
                               </td>
                               <td className="px-4 py-2 text-dark text-sm whitespace-nowrap">{formatReturns(gain, gainPct)}</td>
                               <td className="px-2 py-2 text-center">

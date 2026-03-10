@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { allocatorAPI, portfolioAPI } from "../services/api";
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Eye, X } from 'lucide-react';
 import {
   Bar,
   BarChart,
@@ -96,11 +96,20 @@ const emptyGroupRow = () => ({
   portfolioName: "",
 });
 
+const normalizeGroup = (arr = []) =>
+  (arr || []).map((x) => ({
+    label: x.label || "",
+    amount: x.amount ?? "",
+    portfolioCategory: x.portfolioCategory || "",
+    portfolioName: x.portfolioName || "",
+  }));
+
 const Allocator = () => {
   const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState(null);
+  const [showCompletedModal, setShowCompletedModal] = useState(false);
 
   const [portfolio, setPortfolio] = useState(null);
 
@@ -112,6 +121,12 @@ const Allocator = () => {
   const [savings, setSavings] = useState([emptyGroupRow()]);
   const [personalExpenses, setPersonalExpenses] = useState([emptyGroupRow()]);
   const [monthlyNeeds, setMonthlyNeeds] = useState([emptyGroupRow()]);
+  const [completedAllocations, setCompletedAllocations] = useState({
+    investments: [],
+    savings: [],
+    personalExpenses: [],
+    monthlyNeeds: [],
+  });
 
   const [yearData, setYearData] = useState(null);
   const [chartYear, setChartYear] = useState(getCurrentYear());
@@ -293,6 +308,12 @@ const Allocator = () => {
         .filter((m) => m.month < month && m.salary)
         .sort((a, b) => b.month - a.month)[0];
       setSalary(prevWithSalary?.salary ?? "");
+      setCompletedAllocations({
+        investments: [],
+        savings: [],
+        personalExpenses: [],
+        monthlyNeeds: [],
+      });
       setInvestments([emptyGroupRow()]);
       setSavings([emptyGroupRow()]);
       setPersonalExpenses([emptyGroupRow()]);
@@ -300,31 +321,38 @@ const Allocator = () => {
       return;
     }
     setSalary(existing.salary ?? "");
-    const mapGroup = (arr) =>
-      arr && arr.length
-        ? arr.map((x) => ({
-            label: x.label || "",
-            amount: x.amount ?? "",
-            portfolioCategory: x.portfolioCategory || "",
-            portfolioName: x.portfolioName || "",
-          }))
-        : [emptyGroupRow()];
-    setInvestments(mapGroup(existing.investments));
-    setSavings(mapGroup(existing.savings));
-    setPersonalExpenses(mapGroup(existing.personalExpenses));
-    setMonthlyNeeds(mapGroup(existing.monthlyNeeds));
+    setCompletedAllocations({
+      investments: normalizeGroup(existing.investments),
+      savings: normalizeGroup(existing.savings),
+      personalExpenses: normalizeGroup(existing.personalExpenses),
+      monthlyNeeds: normalizeGroup(existing.monthlyNeeds),
+    });
+    // Existing month allocations stay read-only; editable rows are only for new entries.
+    setInvestments([emptyGroupRow()]);
+    setSavings([emptyGroupRow()]);
+    setPersonalExpenses([emptyGroupRow()]);
+    setMonthlyNeeds([emptyGroupRow()]);
   }, [month, yearData]);
 
   const sumGroup = (items) =>
     (items || []).reduce((sum, x) => sum + (parseFloat(x.amount) || 0), 0);
 
-  const totalInvestments = sumGroup(investments);
-  const totalSavings = sumGroup(savings);
-  const totalPersonal = sumGroup(personalExpenses);
-  const totalNeeds = sumGroup(monthlyNeeds);
+  const draftInvestments = sumGroup(investments);
+  const draftSavings = sumGroup(savings);
+  const draftPersonal = sumGroup(personalExpenses);
+  const draftNeeds = sumGroup(monthlyNeeds);
+  const completedInvestments = sumGroup(completedAllocations.investments);
+  const completedSavings = sumGroup(completedAllocations.savings);
+  const completedPersonal = sumGroup(completedAllocations.personalExpenses);
+  const completedNeeds = sumGroup(completedAllocations.monthlyNeeds);
+  const draftTotalAllocated =
+    draftInvestments + draftSavings + draftPersonal + draftNeeds;
+  const completedTotalAllocated =
+    completedInvestments + completedSavings + completedPersonal + completedNeeds;
   const totalAllocated =
-    totalInvestments + totalSavings + totalPersonal + totalNeeds;
+    draftTotalAllocated + completedTotalAllocated;
   const salaryNumber = parseFloat(salary) || 0;
+  const hasCompletedAllocations = completedTotalAllocated > 0;
 
   const chartYearOptions = useMemo(() => {
     const currentYear = getCurrentYear();
@@ -601,8 +629,19 @@ const Allocator = () => {
             <div className="flex items-baseline justify-between mb-2">
               <div>
                 <div className="text-xs text-dark/70">Total allocated</div>
-                <div className="text-lg font-semibold text-dark">
-                  ₹{totalAllocated.toLocaleString("en-IN")}
+                <div className="text-lg font-semibold text-dark flex items-center gap-2">
+                  <span>₹{totalAllocated.toLocaleString("en-IN")}</span>
+                  {hasCompletedAllocations && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCompletedModal(true)}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-full text-dark/80 hover:text-dark hover:bg-dark/5 transition-colors"
+                      aria-label="View already recorded allocations"
+                      title="View already recorded allocations"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="text-right">
@@ -884,16 +923,22 @@ const Allocator = () => {
                       <span className="text-dark/80 text-xs">{value}</span>
                     )}
                   />
-                  <Bar dataKey="Investments" stackId="a" fill="#3b82f6" />
-                  <Bar dataKey="Savings" stackId="a" fill="#10b981" />
-                  <Bar dataKey="Personal Expenses" stackId="a" fill="#f97316" />
-                  <Bar dataKey="Monthly Needs" stackId="a" fill="#6366f1" />
+                  <Bar dataKey="Investments" stackId="a" fill="#b8e0d2" />
+                  <Bar dataKey="Savings" stackId="a" fill="#37d09a" />
+                  <Bar dataKey="Personal Expenses" stackId="a" fill="#f57c73" />
+                  <Bar dataKey="Monthly Needs" stackId="a" fill="#ffee93" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
       </div>
+      <CompletedAllocationsModal
+        open={showCompletedModal}
+        onClose={() => setShowCompletedModal(false)}
+        completedAllocations={completedAllocations}
+        total={completedTotalAllocated}
+      />
     </div>
   );
 };
@@ -1000,6 +1045,84 @@ const Section = ({
   );
 };
 
+const CompletedAllocationsModal = ({ open, onClose, completedAllocations, total }) => {
+  const groups = [
+    {
+      key: "investments",
+      title: "Investments",
+      items: completedAllocations.investments || [],
+    },
+    { key: "savings", title: "Savings", items: completedAllocations.savings || [] },
+    {
+      key: "personalExpenses",
+      title: "Personal Expenses",
+      items: completedAllocations.personalExpenses || [],
+    },
+    {
+      key: "monthlyNeeds",
+      title: "Monthly Needs",
+      items: completedAllocations.monthlyNeeds || [],
+    },
+  ];
+  const hasAnyCompleted = groups.some((group) => group.items.length > 0);
+
+  if (!open || !hasAnyCompleted) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label="Close modal backdrop"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-2xl rounded-xl border border-[#c6c6c6] dark:border-[#303030] bg-[#f7f5f3] dark:bg-[#161717] p-4 max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-dark">Recorded this month</h2>
+          <div className="flex items-center gap-3">
+            <div className="text-xs text-dark/80">
+              Total: <span className="font-semibold">₹{total.toLocaleString("en-IN")}</span>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full text-dark/70 hover:text-dark hover:bg-dark/10"
+              aria-label="Close already recorded modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {groups.map((group) => {
+            if (!group.items.length) return null;
+            const groupTotal = group.items.reduce(
+              (sum, item) => sum + (parseFloat(item.amount) || 0),
+              0,
+            );
+            return (
+              <div key={group.key} className="rounded-lg border border-[#c6c6c6] dark:border-[#303030]  p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs font-semibold text-dark">{group.title}</div>
+                  <div className="text-[11px] text-dark/70">₹{groupTotal.toLocaleString("en-IN")}</div>
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((item, index) => (
+                    <div key={`${group.key}-${index}`} className="text-xs text-dark/80 flex justify-between gap-2">
+                      <span className="truncate">{item.label || "Untitled"}</span>
+                      <span className="font-medium">₹{(parseFloat(item.amount) || 0).toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const InvestmentSection = ({
   title,
   helper,
@@ -1015,7 +1138,6 @@ const InvestmentSection = ({
   onOpenNewInvestment,
 }) => {
   const dropdownRefs = useRef({});
-  console.log("dropdownRefs", dropdownRefs);
   useEffect(() => {
     function handleClickOutside(event) {
       if (openIndex === null) return;

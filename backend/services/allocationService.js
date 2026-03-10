@@ -98,22 +98,31 @@ export const upsertMonthlyAllocation = async (userId, yearParam, monthParam, bod
   }
 
   const existingIndex = doc.months.findIndex((m) => m.month === month);
-  const monthData = {
-    month,
-    salary,
-    investments,
-    savings,
-    personalExpenses,
-    monthlyNeeds,
-  };
 
   if (existingIndex >= 0) {
-    doc.months[existingIndex] = monthData;
+    const existingMonth = doc.months[existingIndex];
+    doc.months[existingIndex] = {
+      month,
+      salary,
+      investments: [...(existingMonth.investments || []), ...investments],
+      savings: [...(existingMonth.savings || []), ...savings],
+      personalExpenses: [
+        ...(existingMonth.personalExpenses || []),
+        ...personalExpenses,
+      ],
+      monthlyNeeds: [...(existingMonth.monthlyNeeds || []), ...monthlyNeeds],
+    };
   } else {
-    doc.months.push(monthData);
+    doc.months.push({
+      month,
+      salary,
+      investments,
+      savings,
+      personalExpenses,
+      monthlyNeeds,
+    });
   }
 
   await applyInvestmentAllocations(userId, investments);
   return doc.save();
 };
-
