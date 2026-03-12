@@ -1,3 +1,5 @@
+import { logChatStep } from '../../utils/chatLogger.js';
+
 const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-pro';
 const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS) || 45000;
 
@@ -105,9 +107,22 @@ const buildPrompt = ({ userQuestion, intent, analysis, chatHistory = [], financi
   ].join('\n');
 };
 
-export const generateLlmResponse = async ({ userQuestion, intent, analysis, chatHistory = [], financialSnapshot = {}, lastActiveContext = null }) => {
+export const generateLlmResponse = async ({
+  userQuestion,
+  intent,
+  analysis,
+  chatHistory = [],
+  financialSnapshot = {},
+  lastActiveContext = null,
+  traceId = null,
+}) => {
   const apiKey = process.env.GOOGLE_GEMINI_API_KEY?.trim();
   if (!apiKey) {
+    await logChatStep('llm_skipped_missing_api_key', {
+      traceId,
+      intent,
+      userQuestion,
+    });
     return {
       used: false,
       text: null,
@@ -119,6 +134,18 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const maxOutputTokens = getMaxOutputTokens(intent);
   let timeout;
+
+  await logChatStep('llm_request_prepared', {
+    traceId,
+    model: GEMINI_MODEL,
+    intent,
+    userQuestion,
+    chatHistory,
+    financialSnapshot,
+    analysis,
+    prompt,
+    maxOutputTokens,
+  });
 
   try {
     const controller = new AbortController();
@@ -154,6 +181,12 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
     const text = candidate?.content?.parts?.[0]?.text;
     const finishReason = candidate?.finishReason;
     if (text?.trim()) {
+      await logChatStep('llm_response_received', {
+        traceId,
+        intent,
+        finishReason: finishReason || null,
+        text: text.trim(),
+      });
       return {
         used: true,
         text: text.trim(),
@@ -161,6 +194,12 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
       };
     }
 
+    await logChatStep('llm_response_empty', {
+      traceId,
+      intent,
+      finishReason: finishReason || null,
+      rawResponse: json,
+    });
     return {
       used: false,
       text: null,
@@ -168,6 +207,11 @@ export const generateLlmResponse = async ({ userQuestion, intent, analysis, chat
     };
   } catch (error) {
     console.error('Gemini API call failed:', error.message);
+    await logChatStep('llm_request_failed', {
+      traceId,
+      intent,
+      error,
+    });
     return {
       used: false,
       text: null,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BarChart3,
+  Bot,
   Car,
   ChevronLeft,
   ChevronRight,
@@ -12,6 +13,7 @@ import {
   Shield,
   Trash2,
   TrendingUp,
+  UserRound,
   Wallet,
 } from 'lucide-react';
 import { chatAPI } from '../services/api';
@@ -20,6 +22,45 @@ const makeId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
 const formatTime = (isoDate) =>
   new Date(isoDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+const cleanAssistantMessage = (content = '') =>
+  `${content}`
+    .replace(/^\s*\*\s+/gm, '')
+    .replace(/^\s*-\s+/gm, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+const normalizeAssistantSpacing = (content = '') =>
+  `${content}`
+    .replace(/(\b(?:split|breakdown|allocation|plan|recommendation|suggested adjustment):)\s+(?=\*\*[^*]+\*\*:)/gi, '$1\n\n');
+
+const renderInlineBold = (text = '', keyPrefix = 'part') => {
+  const parts = `${text}`.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, index) => {
+    if (/^\*\*.*\*\*$/.test(part)) {
+      return <strong key={`${keyPrefix}_${index}`}>{part.slice(2, -2)}</strong>;
+    }
+
+    return <span key={`${keyPrefix}_${index}`}>{part}</span>;
+  });
+};
+
+const formatAssistantContent = (content = '') => {
+  const cleaned = normalizeAssistantSpacing(cleanAssistantMessage(content));
+  const blocks = cleaned
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => (
+    <p
+      key={`block_${index}`}
+      className={`${/^\*\*.*\*\*/.test(block) ? 'mt-2' : ''} leading-8`}
+    >
+      {renderInlineBold(block, `block_${index}`)}
+    </p>
+  ));
+};
 
 const starterPrompts = [
   {
@@ -94,6 +135,11 @@ const Chat = () => {
   const [animatedMessages, setAnimatedMessages] = useState({});
   const animatedMessageIdsRef = useRef(new Set());
   const activeAnimationRef = useRef({ timer: null, messageId: null });
+  const messagesEndRef = useRef(null);
+
+  const scrollMessagesToBottom = (behavior = 'smooth') => {
+    messagesEndRef.current?.scrollIntoView({ behavior, block: 'end' });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -152,13 +198,14 @@ const Chat = () => {
 
     const lastAssistant = [...active.messages]
       .reverse()
-      .find((msg) => msg.role === 'assistant' && msg.meta?.llm?.used && msg.content?.trim());
+      .find((msg) => msg.role === 'assistant' && msg.meta?.llm?.used && cleanAssistantMessage(msg.content).trim());
 
     if (!lastAssistant) return undefined;
     if (animatedMessageIdsRef.current.has(lastAssistant.id)) return undefined;
     if (activeAnimationRef.current.messageId === lastAssistant.id) return undefined;
 
-    const chunks = `${lastAssistant.content}`.match(/\S+\s*/g) || [];
+    const cleanedContent = cleanAssistantMessage(lastAssistant.content);
+    const chunks = `${cleanedContent}`.match(/\S+\s*/g) || [];
     if (!chunks.length) return undefined;
 
     if (activeAnimationRef.current.timer) {
@@ -172,6 +219,7 @@ const Chat = () => {
       index += 1;
       const nextText = chunks.slice(0, index).join('');
       setAnimatedMessages((prev) => ({ ...prev, [lastAssistant.id]: nextText }));
+      scrollMessagesToBottom('auto');
 
       if (index >= chunks.length) {
         clearInterval(timer);
@@ -189,6 +237,14 @@ const Chat = () => {
       }
     };
   }, [activeConversation]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      scrollMessagesToBottom(sending ? 'smooth' : 'auto');
+    }, 20);
+
+    return () => window.clearTimeout(timer);
+  }, [activeConversation?.id, activeConversation?.messages?.length, sending, pendingStarterPrompt]);
 
   const sendMessage = async (messageText) => {
     const trimmed = `${messageText || ''}`.trim();
@@ -367,7 +423,7 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
           {loading ? (
             <div className="max-w-3xl mx-auto h-full flex items-center justify-center text-sm opacity-70">Loading chats...</div>
-          ) : !activeConversation?.messages?.length ? (
+          ) : !activeConversation?.messages?.length && !pendingStarterPrompt ? (
             <div className="max-w-3xl mx-auto h-full flex flex-col items-center justify-center text-center">
               <h1 className="text-4xl font-semibold mb-2 text-[#0f1f4a] dark:text-[#cfd8ee]">What are you working on?</h1>
               <p className="text-base text-[#6b7280] dark:text-[#9ca3af] mb-8">
@@ -405,59 +461,73 @@ const Chat = () => {
                   })}
                 </div>
               )}
-              {pendingStarterPrompt && (
-                <div className="w-full mt-5 space-y-3">
-                  <div className="flex justify-end">
-                    <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-[#111827] text-white dark:bg-[#f9fafb] dark:text-[#111827]">
-                      <p className="whitespace-pre-wrap text-sm md:text-base">{pendingStarterPrompt}</p>
-                    </div>
-                  </div>
-                  <div className="flex justify-start">
-                    <div className="rounded-2xl px-4 py-3 bg-white border border-black/10 dark:bg-[#1a1c1f] dark:border-white/10 text-sm opacity-70">
-                      Thinking...
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
             <div className="max-w-3xl mx-auto space-y-5">
               {activeConversation.messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                      msg.role === 'user'
-                        ? 'bg-[#111827] text-white dark:bg-[#f9fafb] dark:text-[#111827]'
-                        : 'bg-white border border-black/10 dark:bg-[#1a1c1f] dark:border-white/10'
+                    className={`flex max-w-full gap-2 ${
+                      msg.role === 'user' ? 'flex-row-reverse items-center' : 'items-start'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap text-sm md:text-base">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                        msg.role === 'user'
+                          ? 'bg-[#0f172a] text-white dark:bg-[#f3f4f6] dark:text-[#111827]'
+                          : 'bg-[#0f172a] text-white dark:bg-[#f3f4f6] dark:text-[#111827]'
+                      } ${msg.role === 'assistant' ? 'mt-1' : ''}`}
+                    >
+                      {msg.role === 'user' ? <UserRound className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                    </div>
+                  <div
+                    className={`rounded-[26px] px-4 py-3 text-[#111827] dark:text-[#e5e7eb] ${
+                      msg.role === 'user'
+                        ? 'min-w-[240px] max-w-[min(78%,560px)] bg-[#c6c6c6] dark:bg-[#303030]'
+                        : 'max-w-[85%] bg-transparent'
+                    }`}
+                  >
+                    <div className="whitespace-pre-wrap text-sm md:text-base space-y-4">
                       {msg.role === 'assistant' && msg.meta?.llm?.used
-                        ? animatedMessages[msg.id] ?? msg.content
-                        : msg.content}
-                    </p>
+                        ? formatAssistantContent(animatedMessages[msg.id] ?? msg.content)
+                        : msg.role === 'assistant'
+                          ? formatAssistantContent(msg.content)
+                          : <p className="leading-7">{msg.content}</p>}
+                    </div>
                     {msg.role === 'assistant' && msg.meta?.llm?.used === false && msg.meta?.llm?.error && (
                       <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
                         LLM fallback: {msg.meta.llm.error}
                       </p>
                     )}
                   </div>
+                  </div>
                 </div>
               ))}
               {sending && pendingStarterPrompt && (
                 <div className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-[#111827] text-white dark:bg-[#f9fafb] dark:text-[#111827]">
-                    <p className="whitespace-pre-wrap text-sm md:text-base">{pendingStarterPrompt}</p>
+                  <div className="flex max-w-full items-center gap-2 flex-row-reverse">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0f172a] text-white dark:bg-[#f3f4f6] dark:text-[#111827]">
+                      <UserRound className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-[240px] max-w-[min(78%,560px)] rounded-[26px] bg-[#c6c6c6] px-4 py-3 text-[#111827] dark:bg-[#303030] dark:text-[#e5e7eb]">
+                      <p className="whitespace-pre-wrap text-sm md:text-base leading-7">{pendingStarterPrompt}</p>
+                    </div>
                   </div>
                 </div>
               )}
               {sending && (
                 <div className="flex justify-start">
-                  <div className="rounded-2xl px-4 py-3 bg-white border border-black/10 dark:bg-[#1a1c1f] dark:border-white/10 text-sm opacity-70">
-                    Thinking...
+                  <div className="flex max-w-full items-start gap-2">
+                    <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0f172a] text-white dark:bg-[#f3f4f6] dark:text-[#111827]">
+                      <Bot className="h-4 w-4" />
+                    </div>
+                    <div className="rounded-[26px] bg-transparent px-4 py-3 text-sm opacity-70 dark:text-[#d1d5db]">
+                      Thinking...
+                    </div>
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
           )}
         </div>

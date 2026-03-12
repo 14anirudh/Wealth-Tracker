@@ -20,13 +20,14 @@ import { buildResponse } from './responseBuilder.js';
 import ChatConversation from '../../models/ChatConversation.js';
 import { createHttpError } from '../httpError.js';
 import { generateLlmResponse, sanitizeAnalysisForLlm } from './aiService.js';
+import { logChatStep } from '../../utils/chatLogger.js';
 
 const DEFAULT_AFFORDABILITY_MONTHS = 12;
 const DEFAULT_CORPUS_YEARS = 10;
 const DEFAULT_EXPECTED_RETURN = 12;
 const MAX_SEARCH_YEARS = 40;
 
-const resolveAssistantMessage = async ({ userQuestion, intent, analysis, chatHistory, financialSnapshot, lastActiveContext }) => {
+const resolveAssistantMessage = async ({ userQuestion, intent, analysis, chatHistory, financialSnapshot, lastActiveContext, traceId }) => {
   const llm = await generateLlmResponse({
     userQuestion,
     intent,
@@ -34,11 +35,21 @@ const resolveAssistantMessage = async ({ userQuestion, intent, analysis, chatHis
     chatHistory,
     financialSnapshot,
     lastActiveContext,
+    traceId,
   });
 
   const fallbackMessage = buildResponse({ intent, data: analysis });
+  const finalMessage = llm?.text || fallbackMessage;
+  await logChatStep('assistant_message_resolved', {
+    traceId,
+    intent,
+    llmUsed: Boolean(llm?.used && llm?.text),
+    llmError: llm?.error || null,
+    fallbackMessage,
+    finalMessage,
+  });
   return {
-    message: llm?.text || fallbackMessage,
+    message: finalMessage,
     llm: {
       used: Boolean(llm?.used && llm?.text),
       error: llm?.error || null,
@@ -187,13 +198,25 @@ const estimateYearsToTargetCorpus = async (userId, targetCorpus, monthlyInvestme
   };
 };
 
-export const processChatMessage = async (userId, message, memory = {}) => {
+export const processChatMessage = async (userId, message, memory = {}, options = {}) => {
+  const traceId = options.traceId || null;
   const classification = classifyIntent(message);
   const contextual = resolveWithConversationContext({ classification, memory, message });
   const { intent, entities } = contextual;
   const chatHistory = memory.chatHistory || [];
   const financialSnapshot = await buildCurrentFinancialSnapshot(userId, memory);
   const lastActiveContext = memory.lastActiveContext || null;
+
+  await logChatStep('chat_processing_started', {
+    traceId,
+    userId,
+    message,
+    memory,
+    classification,
+    contextual,
+    financialSnapshot,
+    lastActiveContext,
+  });
 
   if (intent === CHAT_INTENTS.SAVINGS_CHECK) {
     const [savings, income, expenses] = await Promise.all([
@@ -215,6 +238,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -253,6 +277,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -315,6 +340,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -350,6 +376,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -391,6 +418,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -454,6 +482,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
       chatHistory,
       financialSnapshot,
       lastActiveContext,
+      traceId,
     });
 
     return {
@@ -480,6 +509,7 @@ export const processChatMessage = async (userId, message, memory = {}) => {
     chatHistory,
     financialSnapshot,
     lastActiveContext,
+    traceId,
   });
 
   return {
@@ -513,7 +543,8 @@ export const listChatConversations = async (userId) => {
   return conversations.map(formatConversation);
 };
 
-export const saveChatMessage = async (userId, message, conversationId = null) => {
+export const saveChatMessage = async (userId, message, conversationId = null, options = {}) => {
+  const traceId = options.traceId || null;
   let conversation = null;
 
   if (conversationId) {
@@ -545,13 +576,28 @@ export const saveChatMessage = async (userId, message, conversationId = null) =>
     lastAnalysis: conversation.context?.lastAnalysis || null,
   };
 
+  await logChatStep('conversation_loaded', {
+    traceId,
+    userId,
+    conversationId: conversation?._id?.toString() || conversationId,
+    isNewConversation: !conversationId,
+    memory,
+  });
+
   conversation.messages.push({
     role: 'user',
     content: message,
     createdAt: new Date(),
   });
 
-  const result = await processChatMessage(userId, message, memory);
+  await logChatStep('conversation_user_message_appended', {
+    traceId,
+    userId,
+    conversationId: conversation?._id?.toString() || null,
+    message,
+  });
+
+  const result = await processChatMessage(userId, message, memory, { traceId });
 
   conversation.messages.push({
     role: 'assistant',
@@ -577,6 +623,22 @@ export const saveChatMessage = async (userId, message, conversationId = null) =>
   };
 
   await conversation.save();
+
+  await logChatStep('conversation_saved', {
+    traceId,
+    userId,
+    conversationId: conversation._id.toString(),
+    result: {
+      intent: result.intent,
+      confidence: result.confidence,
+      entities: result.entities,
+      data: result.data,
+      llm: result.llm,
+      financialSnapshot: result.financialSnapshot,
+      lastActiveContext: result.lastActiveContext,
+      message: result.message,
+    },
+  });
 
   return {
     ...result,
